@@ -5,6 +5,7 @@ from telegram import KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from models.User import User
+from models.Model import Model
 # adskyiproger token:
 TOKEN='1047778864:AAHhfMlfhTKtCIwleg9rB-gRmjbmlmpXvdA'
 
