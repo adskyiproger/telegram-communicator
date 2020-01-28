@@ -21,6 +21,6 @@ class User:
     def getModel(self):
        return self.model
 
-    def getModelState(self):
-       return self.model_state
+    def setModel(self,model):
+       self.model=model
 

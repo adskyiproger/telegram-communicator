@@ -16,10 +16,15 @@ dispatcher = updater.dispatcher
 # Read configuration file
 config = configparser.ConfigParser()
 config.read('settings.ini')
+categories=config['DEFAULT']['categories'].split(",")
+models=config['DEFAULT']['models'].split(",")
+MODELS=dict(zip(models,categories))
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                      level=logging.INFO)
+
+
 
 ACTIVE_USERS={}
 
@@ -52,6 +57,7 @@ def start(update, context):
                  text=config['DEFAULT']['CATEGORY_MENU_HEADER'],
                  reply_markup=reply_markup)
 
+    ACTIVE_USERS[chat_id]=User(chat_id,update.effective_chat.first_name)
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
@@ -68,28 +74,30 @@ dispatcher.add_handler(stop_handler)
 def echo(update, context):
     
     chat_id=update.effective_chat.id
+    REPLY_MARKUP=telegram.ReplyKeyboardRemove()
     
-    if chat_id in ACTIVE_USERS.keys():
-        MESSAGE="Welcome back "+ACTIVE_USERS[chat_id].name
-        if ACTIVE_USERS[chat_id].isModel():
-            MODEL=ACTIVE_USERS[chat_id].getModel()
-            MESSAGE=MODEL.getMessage()   
+    if chat_id in ACTIVE_USERS.keys() and ACTIVE_USERS[chat_id].isModel():
+        MODEL=ACTIVE_USERS[chat_id].getModel()
+        MESSAGE=MODEL.processQuestion(update.message.text)
+        REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
+    elif chat_id in ACTIVE_USERS.keys():
+        if update.message.text in categories:
+            model=models[categories.index(update.message.text)]
+            ACTIVE_USERS[chat_id].setModel(Model(model))
+            MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(update.message.text)
         else:
-            try:
-                print(update.message.text)
-                MODEL=Model(update.message.text)
-            except:
-                print("Unknown Model")
-
-
+            MESSAGE="Please select correct categorie!"
     else:
+        
         MESSAGE="Please write '/start' in chat window to begin dialog"
         ACTIVE_USERS[chat_id]=User(chat_id,update.effective_chat.first_name)
 
-    reply_markup = telegram.ReplyKeyboardRemove()
-    context.bot.send_message(chat_id=chat_id, text="I'm back.", reply_markup=reply_markup)
-    print(ACTIVE_USERS[chat_id].name)
-    context.bot.send_message(chat_id=chat_id, text=MESSAGE)
+#        REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
+        
+    #reply_markup = telegram.ReplyKeyboardRemove()
+    #context.bot.send_message(chat_id=chat_id, text="I'm back.", reply_markup=reply_markup)
+    #print(ACTIVE_USERS[chat_id].name)
+    context.bot.send_message(chat_id=chat_id, text=MESSAGE, reply_markup=REPLY_MARKUP)
 
 echo_handler = MessageHandler(Filters.text, echo)
 dispatcher.add_handler(echo_handler)

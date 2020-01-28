@@ -2,19 +2,27 @@ import configparser
 import logging
 import os.path
 import re
+import telegram
+
+
 class Model:
     state=-1
     name="Generic"
     #script_path=SCRIPT_PATH
     TREE = configparser.ConfigParser()
     SECTIONS=[]
+    ANSWERS=[]
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                      level=logging.INFO)
 
     def verifyAnswer(self,answer):
+        logging.info("Question: "+self.TREE[self.SECTIONS[self.state]]['question'])
+        logging.info("Answer: "+answer)
         if re.match(self.TREE[self.SECTIONS[self.state]]['answer'],answer) is not None:
-            logging.info("Previous question: "+self.TREE[self.SECTIONS[self.state]]['question'])
-            logging.info("Accepted answer: "+self.TREE[self.SECTIONS[self.state]]['question'])
+            ans={ 'answer':answer,
+                  'question':self.TREE[self.SECTIONS[self.state]]['question']
+                    }
+            self.ANSWERS.append(ans)
             if self.TREE[self.SECTIONS[self.state]]['next_question'] == "finish":
                 logging.info("This is last question from the list" )
                 self.state=0
@@ -22,11 +30,14 @@ class Model:
                 a=self.TREE[self.SECTIONS[self.state]]['answer'].split("|")
                 next_ind=a.index(answer)
                 q=self.TREE[self.SECTIONS[self.state]]['next_question'].split("|")[next_ind]
+                #state=self.SECTIONS.index(q)
                 if q != "finish":
-                    logging.info("Question tree identified: "+self.SECTIONS[self.state]+" --> "+self.SECTIONS[next_ind] )
+                    q=self.TREE[self.SECTIONS[self.state]]['next_question'].split("|")[next_ind]
+                #state=self.SECTIONS.index(q)
+                    logging.info("Question tree identified: "+self.SECTIONS[self.state]+" --> "+self.SECTIONS[self.state] )
                     self.state=self.SECTIONS.index(q)
                 else:
-                    logging.info("Question tree identified: "+self.SECTIONS[self.state]+" --> "+self.SECTIONS[next_ind] )
+                    logging.info("this is last question from the list" )
                     self.state=0
             else:
                 logging.info("Doing increment.")
@@ -43,22 +54,30 @@ class Model:
         elif self.state >= 0:
             if self.verifyAnswer(answer) is not None:
                 if self.state==0:
-                    return "END"
+                    return self.TREE['generic']['last_message']
                 else:
                     return self.TREE[self.SECTIONS[self.state]]['question']
             else:   
                 logging.info("Answer is not correct: "+answer)
                 return self.TREE[self.SECTIONS[self.state]]['question']
             
-    def getState(self):
-        return self.state
+    def getMarkup(self):
+        try:
+            logging.info("getMarkup(): answer: "+self.TREE[self.SECTIONS[self.state]]['answer'])
+            if len(self.TREE[self.SECTIONS[self.state]]['answer'].split("|")) > 1 and self.state != 0:
+                custom_keyboard = [ self.TREE[self.SECTIONS[self.state]]['answer'].split("|")  ]
+                reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+                return reply_markup
+            else:
+                return telegram.ReplyKeyboardRemove()
+        except:
+            return telegram.ReplyKeyboardRemove()
 
     def getName(self):
         return self.name
 
-    def getMessage(self):
-        message=self.message
-        return message
+    def getAnswers(self):
+        return self.ANSWERS
 
     def loadModel(self):
         self.TREE.read(self.model_config)
