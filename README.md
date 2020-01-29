@@ -1,6 +1,6 @@
 # Communicator
 
-Telegram bot for interaction with clients.
+Telegram bot for client dialogs support.
 
 # Questionary
 
