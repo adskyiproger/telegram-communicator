@@ -17,6 +17,8 @@ class User:
            return True
        else:
            return False
+    def getName(self):
+        return self.name
 
     def getModel(self):
        return self.model

@@ -3,7 +3,7 @@ import logging
 import configparser
 from telegram import KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from models.User import User
 from models.Model import Model
 # adskyiproger token:
@@ -19,7 +19,10 @@ config.read('settings.ini')
 categories=config['DEFAULT']['categories'].split(",")
 models=config['DEFAULT']['models'].split(",")
 MODELS=dict(zip(models,categories))
-
+keyboard=[]
+for key in config['DEFAULT']['CATEGORIES'].split(","):
+      keyboard.append(InlineKeyboardButton(key, callback_data=key))
+      start_reply_markup=InlineKeyboardMarkup([ keyboard ])
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                      level=logging.INFO)
@@ -41,18 +44,44 @@ def build_menu(buttons,
         menu.append([footer_buttons])
     return menu
 
+def button(update, context):
+    chat_id=update.effective_chat.id
+    query = update.callback_query
+
+    if chat_id in ACTIVE_USERS.keys() and ACTIVE_USERS[chat_id].isModel():
+        MODEL=ACTIVE_USERS[chat_id].getModel()
+        MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(query.data)
+        REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
+        if ACTIVE_USERS[chat_id].getModel().getStatus() == 0:
+             logging.info(ACTIVE_USERS[chat_id].getModel().getAnswers())
+             #MESSAGE=ACTIVE_USERS[chat_id].getModel().getAnswers()
+             ACTIVE_USERS[chat_id].setModel("NA")
+             MESSAGE+=config['DEFAULT']['BYE_MESSAGE']
+    elif chat_id in ACTIVE_USERS.keys():
+        if query.data in categories:
+            model=models[categories.index(query.data)]
+            ACTIVE_USERS[chat_id].setModel(Model(model))
+            MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(query.data)
+            REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
+        else:
+            MESSAGE=config['DEFAULT']['GREETING_WORD']+" "+ACTIVE_USERS[chat_id].getName()+"! "+config['DEFAULT']['WELCOME_MESSAGE']
+            REPLY_MARKUP=start_reply_markup
+    else:
+        ACTIVE_USERS[chat_id]=User(chat_id,update.effective_chat.first_name)
+        MESSAGE=config['DEFAULT']['GREETING_WORD']+" "+ACTIVE_USERS[chat_id].getName()+"! "+config['DEFAULT']['WELCOME_MESSAGE']
+        REPLY_MARKUP=start_reply_markup
+    query.edit_message_text(text=config['DEFAULT']['SELECTED_OPTION']+" {}".format(query.data))
+    context.bot.send_message(chat_id=chat_id, text=MESSAGE, parse_mode=telegram.ParseMode.HTML,reply_markup=REPLY_MARKUP)
+     
+
+dispatcher.add_handler(CallbackQueryHandler(button))
+
 # Bot commands:
 # /start
 def start(update, context):
     chat_id=update.effective_chat.id
-    context.bot.send_message(chat_id=chat_id, text='<b>bold</b> <i>italic</i> <a href="http://google.com">link</a>.', 
-                 parse_mode=telegram.ParseMode.HTML)
     logging.info(update.effective_chat)
-    custom_keyboard = [ config['DEFAULT']['CATEGORIES'].split(",") ]
-    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
     print(reply_markup)
-    #reply_markup = telegram.InlineKeyboardMarkup(build_menu(custom_keyboard, n_cols=2 ))
-    #print(custom_keyboard + "=" + config['DEFAULT']['CATEGORIES'])
     context.bot.send_message(chat_id=chat_id,
                  text=config['DEFAULT']['CATEGORY_MENU_HEADER'],
                  reply_markup=reply_markup)
@@ -80,24 +109,25 @@ def echo(update, context):
         MODEL=ACTIVE_USERS[chat_id].getModel()
         MESSAGE=MODEL.processQuestion(update.message.text)
         REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
+        if ACTIVE_USERS[chat_id].getModel().getStatus() == 0:
+             logging.info(ACTIVE_USERS[chat_id].getModel().getAnswers())
+             #MESSAGE=ACTIVE_USERS[chat_id].getModel().getAnswers()
+             ACTIVE_USERS[chat_id].setModel("NA")
+             MESSAGE+=config['DEFAULT']['BYE_MESSAGE']
     elif chat_id in ACTIVE_USERS.keys():
         if update.message.text in categories:
             model=models[categories.index(update.message.text)]
             ACTIVE_USERS[chat_id].setModel(Model(model))
             MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(update.message.text)
         else:
-            MESSAGE="Please select correct categorie!"
+            MESSAGE=config['DEFAULT']['GREETING_WORD']+" "+ACTIVE_USERS[chat_id].getName()+"! "+config['DEFAULT']['WELCOME_MESSAGE']
+            REPLY_MARKUP=start_reply_markup
     else:
-        
-        MESSAGE="Please write '/start' in chat window to begin dialog"
         ACTIVE_USERS[chat_id]=User(chat_id,update.effective_chat.first_name)
+        MESSAGE=config['DEFAULT']['GREETING_WORD']+" "+ACTIVE_USERS[chat_id].getName()+"! "+config['DEFAULT']['WELCOME_MESSAGE']
+        REPLY_MARKUP=start_reply_markup
 
-#        REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
-        
-    #reply_markup = telegram.ReplyKeyboardRemove()
-    #context.bot.send_message(chat_id=chat_id, text="I'm back.", reply_markup=reply_markup)
-    #print(ACTIVE_USERS[chat_id].name)
-    context.bot.send_message(chat_id=chat_id, text=MESSAGE, reply_markup=REPLY_MARKUP)
+    context.bot.send_message(chat_id=chat_id, text=MESSAGE, parse_mode=telegram.ParseMode.HTML,reply_markup=REPLY_MARKUP)
 
 echo_handler = MessageHandler(Filters.text, echo)
 dispatcher.add_handler(echo_handler)

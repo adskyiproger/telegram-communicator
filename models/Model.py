@@ -3,10 +3,12 @@ import logging
 import os.path
 import re
 import telegram
-
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
 class Model:
     state=-1
+    status=-1
     name="Generic"
     #script_path=SCRIPT_PATH
     TREE = configparser.ConfigParser()
@@ -55,6 +57,7 @@ class Model:
             if self.verifyAnswer(answer) is not None:
                 if self.state==0:
                     return self.TREE['generic']['last_message']
+                    
                 else:
                     return self.TREE[self.SECTIONS[self.state]]['question']
             else:   
@@ -65,8 +68,13 @@ class Model:
         try:
             logging.info("getMarkup(): answer: "+self.TREE[self.SECTIONS[self.state]]['answer'])
             if len(self.TREE[self.SECTIONS[self.state]]['answer'].split("|")) > 1 and self.state != 0:
-                custom_keyboard = [ self.TREE[self.SECTIONS[self.state]]['answer'].split("|")  ]
-                reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+                #custom_keyboard = [ self.TREE[self.SECTIONS[self.state]]['answer'].split("|")  ]
+                #reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+                keyboard=[]
+                for key in self.TREE[self.SECTIONS[self.state]]['answer'].split("|"):
+                    keyboard.append(InlineKeyboardButton(key, callback_data=key))
+                reply_markup=InlineKeyboardMarkup([ keyboard ])
+
                 return reply_markup
             else:
                 return telegram.ReplyKeyboardRemove()
@@ -78,7 +86,8 @@ class Model:
 
     def getAnswers(self):
         return self.ANSWERS
-
+    def getStatus(self):
+        return self.state
     def loadModel(self):
         self.TREE.read(self.model_config)
         self.SECTIONS=self.TREE.sections()
