@@ -54,6 +54,7 @@ def button(update, context):
         REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
         if ACTIVE_USERS[chat_id].getModel().getStatus() == 0:
              logging.info(ACTIVE_USERS[chat_id].getModel().getAnswers())
+             saveAnswers(update,context,ACTIVE_USERS[chat_id].getModel().getAnswers())
              #MESSAGE=ACTIVE_USERS[chat_id].getModel().getAnswers()
              ACTIVE_USERS[chat_id].setModel("NA")
              MESSAGE+=config['DEFAULT']['BYE_MESSAGE']
@@ -111,6 +112,7 @@ def echo(update, context):
         REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
         if ACTIVE_USERS[chat_id].getModel().getStatus() == 0:
              logging.info(ACTIVE_USERS[chat_id].getModel().getAnswers())
+             saveAnswers(update,context,ACTIVE_USERS[chat_id].getModel().getAnswers())
              #MESSAGE=ACTIVE_USERS[chat_id].getModel().getAnswers()
              ACTIVE_USERS[chat_id].setModel("NA")
              MESSAGE+=config['DEFAULT']['BYE_MESSAGE']
@@ -139,6 +141,21 @@ def unknown(update, context):
 unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
 
+def saveAnswers(update,context,answers):
+    report=config['DEFAULT']['REPORT_HEADER']+"\n"
+    admin_report=config['DEFAULT']['ADMIN_REPORT_HEADER']+" "+str(update.effective_chat.first_name)+"("+str(update.effective_chat.id)+")\n"
+    for ii in answers:
+        print(ii['question']+" "+ii['answer'])
+
+        report+="<b>"+ii['question']+"</b> "+ii['answer']+"\n"
+        admin_report+="<b>"+ii['question']+"</b> "+ii['answer']+"\n"
+    logging.info("Report sent to used: "+str(update.effective_chat.id))
+    context.bot.send_message(chat_id=update.effective_chat.id, text=report, parse_mode=telegram.ParseMode.HTML)
+    for ID in config['DEFAULT']['ADMIN_USER_IDS'].split(","):
+        context.bot.send_message(chat_id=int(ID), text=admin_report, parse_mode=telegram.ParseMode.HTML)
+
+
+            
 
 
 
