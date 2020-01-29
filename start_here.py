@@ -53,9 +53,7 @@ def button(update, context):
         MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(query.data)
         REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
         if ACTIVE_USERS[chat_id].getModel().getStatus() == 0:
-             logging.info(ACTIVE_USERS[chat_id].getModel().getAnswers())
              saveAnswers(update,context,ACTIVE_USERS[chat_id].getModel().getAnswers())
-             #MESSAGE=ACTIVE_USERS[chat_id].getModel().getAnswers()
              ACTIVE_USERS[chat_id].setModel("NA")
              MESSAGE+=config['DEFAULT']['BYE_MESSAGE']
     elif chat_id in ACTIVE_USERS.keys():
@@ -82,7 +80,6 @@ dispatcher.add_handler(CallbackQueryHandler(button))
 def start(update, context):
     chat_id=update.effective_chat.id
     logging.info(update.effective_chat)
-    print(reply_markup)
     context.bot.send_message(chat_id=chat_id,
                  text=config['DEFAULT']['CATEGORY_MENU_HEADER'],
                  reply_markup=reply_markup)
@@ -111,9 +108,7 @@ def echo(update, context):
         MESSAGE=MODEL.processQuestion(update.message.text)
         REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
         if ACTIVE_USERS[chat_id].getModel().getStatus() == 0:
-             logging.info(ACTIVE_USERS[chat_id].getModel().getAnswers())
              saveAnswers(update,context,ACTIVE_USERS[chat_id].getModel().getAnswers())
-             #MESSAGE=ACTIVE_USERS[chat_id].getModel().getAnswers()
              ACTIVE_USERS[chat_id].setModel("NA")
              MESSAGE+=config['DEFAULT']['BYE_MESSAGE']
     elif chat_id in ACTIVE_USERS.keys():
@@ -145,7 +140,7 @@ def saveAnswers(update,context,answers):
     report=config['DEFAULT']['REPORT_HEADER']+"\n"
     admin_report=config['DEFAULT']['ADMIN_REPORT_HEADER']+" "+str(update.effective_chat.first_name)+"("+str(update.effective_chat.id)+")\n"
     for ii in answers:
-        print(ii['question']+" "+ii['answer'])
+        #print(ii['question']+" "+ii['answer'])
 
         report+="<b>"+ii['question']+"</b> "+ii['answer']+"\n"
         admin_report+="<b>"+ii['question']+"</b> "+ii['answer']+"\n"
