@@ -6,16 +6,16 @@ from telegram.ext import Updater
 from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from models.User import User
 from models.Model import Model
-# adskyiproger token:
-TOKEN='1047778864:AAHhfMlfhTKtCIwleg9rB-gRmjbmlmpXvdA'
+# Read configuration file
+config = configparser.ConfigParser()
+config.read('settings.ini')
+
+# Register token:
+TOKEN=config['DEFAULT']['TOKEN']
 
 bot = telegram.Bot(token=TOKEN)
 updater = Updater(token=TOKEN, use_context=True)
 dispatcher = updater.dispatcher
-
-# Read configuration file
-config = configparser.ConfigParser()
-config.read('settings.ini')
 
 # Create models to categories relation:
 categories=config['DEFAULT']['categories'].split(",")
