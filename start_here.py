@@ -16,23 +16,45 @@ dispatcher = updater.dispatcher
 # Read configuration file
 config = configparser.ConfigParser()
 config.read('settings.ini')
+
+# Create models to categories relation:
 categories=config['DEFAULT']['categories'].split(",")
 models=config['DEFAULT']['models'].split(",")
 MODELS=dict(zip(models,categories))
+
+# Define initial branches:
 keyboard=[]
 for key in config['DEFAULT']['CATEGORIES'].split(","):
       keyboard.append(InlineKeyboardButton(key, callback_data=key))
       start_reply_markup=InlineKeyboardMarkup([ keyboard ])
 
+# Setup logger:
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO)
+                     level=logging.INFO,
+                     filename=config['DEFAULT']['LOG_FILE'],
+                     filemode='w')
 
 
-
+# Dictionary for active users: Store users answers and data
 ACTIVE_USERS={}
 
-print(bot.get_me())
 
+logging.info("Bot initialized: "+str(bot.get_me()))
+
+# Forward Answers to ADMIN_USERs:
+def saveAnswers(update,context,answers):
+    user_report=config['DEFAULT']['REPORT_HEADER']+"\n"
+    admin_report=config['DEFAULT']['ADMIN_REPORT_HEADER']+" "+str(update.effective_chat.first_name)+"("+str(update.effective_chat.id)+")\n"
+    report=""
+    for ii in answers:
+        report+="<b>"+ii['question']+"</b> "+ii['answer']+"\n"
+
+    logging.info("Report sent to used: "+str(update.effective_chat.id))
+    context.bot.send_message(chat_id=update.effective_chat.id, text=user_report+report, parse_mode=telegram.ParseMode.HTML)
+    for ID in config['DEFAULT']['ADMIN_USER_IDS'].split(","):
+        context.bot.send_message(chat_id=int(ID), text=admin_report+report, parse_mode=telegram.ParseMode.HTML)
+
+# TBD: this function is not working
 def build_menu(buttons,
                n_cols,
                header_buttons=None,
@@ -44,6 +66,24 @@ def build_menu(buttons,
         menu.append([footer_buttons])
     return menu
 
+
+# Telegram functions implementation:
+
+# Bot commands:
+# /do_suicide
+def do_suicide(update,context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="I do not want to die, but if you really ask me, I will do that. Bye!!!!")
+    updater.stop()
+
+dispatcher.add_handler( CommandHandler('do_suicide', do_suicide) )
+
+# /unknown command processor:
+def unknown(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
+
+dispatcher.add_handler(MessageHandler(Filters.command, unknown))
+
+# Process Inline Buttons:
 def button(update, context):
     chat_id=update.effective_chat.id
     query = update.callback_query
@@ -75,29 +115,7 @@ def button(update, context):
 
 dispatcher.add_handler(CallbackQueryHandler(button))
 
-# Bot commands:
-# /start
-def start(update, context):
-    chat_id=update.effective_chat.id
-    logging.info(update.effective_chat)
-    context.bot.send_message(chat_id=chat_id,
-                 text=config['DEFAULT']['CATEGORY_MENU_HEADER'],
-                 reply_markup=reply_markup)
-
-    ACTIVE_USERS[chat_id]=User(chat_id,update.effective_chat.first_name)
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
-
-# /do_suicide
-def do_suicide(update,context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="I do not want to die, but if you really ask me, I will do that. Bye!!!!")
-    updater.stop()
-
-stop_handler = CommandHandler('do_suicide', do_suicide)
-dispatcher.add_handler(stop_handler)
-
-
-# echo: This is main handler, but all Logic is hidden behind the Model class
+# Process text responses
 def echo(update, context):
     
     chat_id=update.effective_chat.id
@@ -126,33 +144,6 @@ def echo(update, context):
 
     context.bot.send_message(chat_id=chat_id, text=MESSAGE, parse_mode=telegram.ParseMode.HTML,reply_markup=REPLY_MARKUP)
 
-echo_handler = MessageHandler(Filters.text, echo)
-dispatcher.add_handler(echo_handler)
-
-# small class 
-def unknown(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
-
-unknown_handler = MessageHandler(Filters.command, unknown)
-dispatcher.add_handler(unknown_handler)
-
-def saveAnswers(update,context,answers):
-    report=config['DEFAULT']['REPORT_HEADER']+"\n"
-    admin_report=config['DEFAULT']['ADMIN_REPORT_HEADER']+" "+str(update.effective_chat.first_name)+"("+str(update.effective_chat.id)+")\n"
-    for ii in answers:
-        #print(ii['question']+" "+ii['answer'])
-
-        report+="<b>"+ii['question']+"</b> "+ii['answer']+"\n"
-        admin_report+="<b>"+ii['question']+"</b> "+ii['answer']+"\n"
-    logging.info("Report sent to used: "+str(update.effective_chat.id))
-    context.bot.send_message(chat_id=update.effective_chat.id, text=report, parse_mode=telegram.ParseMode.HTML)
-    for ID in config['DEFAULT']['ADMIN_USER_IDS'].split(","):
-        context.bot.send_message(chat_id=int(ID), text=admin_report, parse_mode=telegram.ParseMode.HTML)
-
-
-            
-
-
-
+dispatcher.add_handler(MessageHandler(Filters.text, echo))
 
 updater.start_polling()
