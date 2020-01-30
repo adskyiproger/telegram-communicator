@@ -16,8 +16,8 @@ class Model:
     def verifyAnswer(self,answer):
         
         CURRENT_QUESTION=self.TREE[self.SECTIONS[self.STATE]]
-        logging.info("verifyAnswer(): Question: "+CURRENT_QUESTION['question'])
-        logging.info("verifyAnswer(): "+answer)
+        logging.info("verifyAnswer(): Q: "+CURRENT_QUESTION['question'])
+        logging.info("verifyAnswer(): A: "+answer)
         # Check if answer match acceptable answers
         if re.match(CURRENT_QUESTION['answer'],answer) is not None:
             ans={ 'answer':answer,
@@ -34,7 +34,7 @@ class Model:
                 next_q=CURRENT_QUESTION['next_question'].split("|")[next_q_ind]
                 # Is choise not set to last question?
                 if next_q != "finish":
-                    logging.info("verifyAnswer(): "+self.SECTIONS[self.STATE]+" --> "+next_q )
+                    logging.info("verifyAnswer(): Next section: "+self.SECTIONS[self.STATE]+" --> "+next_q )
                     self.STATE=self.SECTIONS.index(next_q)
                 # Is choise set to last question
                 elif next_q == "finish":
@@ -43,7 +43,7 @@ class Model:
                 else:
                     logging.warning("verifyAnswer(): Something went wrong: Q: "+ans['question']+" A:"+ans['answer'])
             else:
-                logging.info("verifyAnswer(): "+self.SECTIONS[self.STATE]+" --> "+str(self.STATE+1))
+                logging.info("verifyAnswer(): Next section: "+self.SECTIONS[self.STATE]+" --> "+self.SECTIONS[self.STATE+1])
                 self.STATE += 1
             return True    
         else:

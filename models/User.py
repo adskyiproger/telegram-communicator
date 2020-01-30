@@ -1,3 +1,4 @@
+import logging
 class User:
 
     model="NA"
@@ -6,6 +7,7 @@ class User:
     def __init__(self, uid, name=None):
        self.uid=uid
        self.name=name
+       logging.info("User(): initialized: "+str(uid)+" name: "+name)
 
     def __eq__(self,other):
        if not isinstance(other, User):
