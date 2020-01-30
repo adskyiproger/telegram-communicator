@@ -1,5 +1,8 @@
 import telegram
 import logging
+import logging.handlers
+import sys
+
 import configparser
 from telegram import KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater
@@ -11,11 +14,18 @@ config = configparser.ConfigParser()
 config.read('settings.ini')
 
 # Setup logger:
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.DEBUG,
-                     filename=config['DEFAULT']['LOG_FILE'],
-                     filemode='w')
-
+logging.basicConfig(
+                format = '[%(asctime)s] [%(levelname)s]: %(message)s',
+                level = logging.INFO,
+                handlers = [
+                    logging.handlers.RotatingFileHandler(
+                                        filename = config['DEFAULT']['LOG_FILE'],
+                                        maxBytes = (1048576*5),
+                                        backupCount = 1,
+                                        ),
+                    logging.StreamHandler(sys.stdout)
+                    ]
+                )
 
 # Register token:
 TOKEN=config['DEFAULT']['TOKEN']
