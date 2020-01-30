@@ -10,6 +10,13 @@ from models.Model import Model
 config = configparser.ConfigParser()
 config.read('settings.ini')
 
+# Setup logger:
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                     level=logging.DEBUG,
+                     filename=config['DEFAULT']['LOG_FILE'],
+                     filemode='w')
+
+
 # Register token:
 TOKEN=config['DEFAULT']['TOKEN']
 
@@ -28,12 +35,6 @@ for key in config['DEFAULT']['CATEGORIES'].split(","):
       keyboard.append(InlineKeyboardButton(key, callback_data=key))
       start_reply_markup=InlineKeyboardMarkup([ keyboard ])
 
-# Setup logger:
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO,
-                     filename=config['DEFAULT']['LOG_FILE'],
-                     filemode='w')
-
 
 # Dictionary for active users: Store users answers and data
 ACTIVE_USERS={}
@@ -49,7 +50,7 @@ def saveAnswers(update,context,answers):
     for ii in answers:
         report+="<b>"+ii['question']+"</b> "+ii['answer']+"\n"
 
-    logging.info("Report sent to used: "+str(update.effective_chat.id))
+    logging.debug("Report sent to used: "+str(update.effective_chat.id))
     context.bot.send_message(chat_id=update.effective_chat.id, text=user_report+report, parse_mode=telegram.ParseMode.HTML)
     for ID in config['DEFAULT']['ADMIN_USER_IDS'].split(","):
         context.bot.send_message(chat_id=int(ID), text=admin_report+report, parse_mode=telegram.ParseMode.HTML)

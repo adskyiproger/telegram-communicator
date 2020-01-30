@@ -15,7 +15,7 @@ class Model:
     SECTIONS=[]
     ANSWERS=[]
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO)
+                     level=logging.DEBUG)
 
     def verifyAnswer(self,answer):
         logging.info("Question: "+self.TREE[self.SECTIONS[self.state]]['question'])
@@ -51,7 +51,7 @@ class Model:
     def processQuestion(self,answer):
         if self.state == -1:
             self.state=1
-            logging.info("Question: "+self.TREE[self.SECTIONS[1]]['question'])
+            logging.info("processQuestion(): Initial question "+self.TREE[self.SECTIONS[1]]['question'])
             return(self.TREE[self.SECTIONS[1]]['question'])       
         elif self.state >= 0:
             if self.verifyAnswer(answer) is not None:
@@ -61,7 +61,7 @@ class Model:
                 else:
                     return self.TREE[self.SECTIONS[self.state]]['question']
             else:   
-                logging.info("Answer is not correct: "+answer)
+                logging.warning("Answer is not correct: "+answer)
                 return self.TREE[self.SECTIONS[self.state]]['question']
             
     def getMarkup(self):
@@ -85,6 +85,11 @@ class Model:
         return self.name
 
     def getAnswers(self):
+        str1=""
+        for el in self.ANSWERS:
+            str1+=el['question']+":"+el['answer']+"\n"
+
+        logging.debug("getAnswers(): Answers list:"+str1)
         return self.ANSWERS
     def getStatus(self):
         return self.state
@@ -94,13 +99,16 @@ class Model:
         logging.info("Model "+self.name+" ("+self.TREE['generic']['name']+") from file: "+self.model_config)
 
     def __init__(self, model_name):
-        logging.info("initialization")
+        logging.debug("init(): initialization")
         self.name=model_name
         self.model_config=self.name+"_model.ini"
+
+        logging.debug("init(): clear list")
+        self.ANSWERS.clear()
         if os.path.isfile(self.model_config):
             self.loadModel()
         else:
-            logging.error("Model file "+self.model_config+" doesn't exist.")
+            logging.error("init(): Model file "+self.model_config+" doesn't exist.")
             raise Exception("Passed wrong model name: "+self.name)
 
        
