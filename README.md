@@ -1,6 +1,7 @@
 # Telegram Communicator
-Project is built using [python-telegram-bot](https://github.com/python-telegram-bot/)
-Telegram bot for client dialogs support.
+Telegram bot for client dialogs support. Project is built using 
+[python-telegram-bot](https://github.com/python-telegram-bot/).
+
 
 # Questionary
 
