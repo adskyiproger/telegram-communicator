@@ -1,6 +1,9 @@
 # Communicator
 
-Telegram bot for client dialogs support.
+Telegram bot for client dialogs support. Project is built using 
+[python-telegram-bot](https://github.com/python-telegram-bot/).
+
+
 
 # Questionary
 
@@ -60,3 +63,12 @@ Question section has following properties:
 a list of possible answers then this section should also contain a list if
 possible next questions. E/g: if `answer=Yes|No` then `next_question=q4|finish`.
 `finish` is a special keyword to identify the end of the questionary.
+
+# Docker images
+
+Effected files:
+
+* `Dockerfile`, 
+* `settings.ini`,
+* `<model name>_model.ini`,
+* `telegram-bot.log`

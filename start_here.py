@@ -11,7 +11,7 @@ from models.User import User
 from models.Model import Model
 # Read configuration file
 config = configparser.ConfigParser()
-config.read('settings.ini')
+config.read('conf/settings.ini')
 
 # Setup logger:
 logging.basicConfig(

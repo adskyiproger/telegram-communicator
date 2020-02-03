@@ -100,7 +100,7 @@ class Model:
     def __init__(self, model_name):
         logging.info("Model(): initialization: "+model_name)
         self.name=model_name
-        self.model_config=self.name+"_model.ini"
+        self.model_config="conf/models/"+self.name+"_model.ini"
 
         logging.debug("init(): clear list")
         self.ANSWERS.clear()
@@ -108,6 +108,6 @@ class Model:
             self.loadModel()
         else:
             logging.error("init(): Model file "+self.model_config+" doesn't exist.")
-            raise Exception("Passed wrong model name: "+self.name)
+            raise Exception("Passed wrong model name: "+self.model_config)
 
        
