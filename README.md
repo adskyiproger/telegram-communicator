@@ -2,14 +2,6 @@
 Telegram bot for client dialogs support. Project is built using 
 [python-telegram-bot](https://github.com/python-telegram-bot/).
 
-<<<<<<< HEAD
-Telegram bot for client dialogs support. Project is built using 
-[python-telegram-bot](https://github.com/python-telegram-bot/).
-
-
-=======
->>>>>>> f69412b815104c8c9514318d104ded42e03f170b
-
 # Questionary
 
 ## Create new questions model file
