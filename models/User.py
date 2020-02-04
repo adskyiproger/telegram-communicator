@@ -1,6 +1,6 @@
 import logging
 class User:
-
+    LANG="DEFAULT"
     model="NA"
     model_state=-1
 
@@ -28,3 +28,8 @@ class User:
     def setModel(self,model):
        self.model=model
 
+    def setLang(self,lang):
+        self.LANG=lang
+
+    def getLang(self):
+        return self.LANG

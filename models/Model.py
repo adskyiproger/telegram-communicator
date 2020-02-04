@@ -93,21 +93,24 @@ class Model:
         return self.STATE
 
     def loadModel(self):
+
+        if os.path.isfile("conf/models/"+self.name+"_"+self.user_lang+"_"+"model.ini"):
+            self.model_config="conf/models/"+self.name+"_"+self.user_lang+"_"+"model.ini"
+        elif os.path.isfile("conf/models/"+self.name+"_"+"model.ini"):
+            self.model_config="conf/models/"+self.name+"_"+"model.ini"
+        else:
+            logging.error("init(): Model file "+self.model_config+" doesn't exist.")
+            raise Exception("Passed wrong model name: "+self.model_config)
+    
+        self.ANSWERS.clear()
         self.TREE.read(self.model_config)
         self.SECTIONS=self.TREE.sections()
         logging.info("loadModel(): "+self.name+" ("+self.TREE['generic']['name']+") from file: "+self.model_config)
 
-    def __init__(self, model_name):
+    def __init__(self, model_name="",user_lang=""):
         logging.info("Model(): initialization: "+model_name)
         self.name=model_name
-        self.model_config="conf/models/"+self.name+"_model.ini"
-
-        logging.debug("init(): clear list")
-        self.ANSWERS.clear()
-        if os.path.isfile(self.model_config):
-            self.loadModel()
-        else:
-            logging.error("init(): Model file "+self.model_config+" doesn't exist.")
-            raise Exception("Passed wrong model name: "+self.model_config)
+        self.user_lang=user_lang+"_"
+        self.loadModel()
 
        

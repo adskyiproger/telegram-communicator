@@ -43,8 +43,15 @@ MODELS=dict(zip(models,categories))
 keyboard=[]
 for key in config['DEFAULT']['CATEGORIES'].split(","):
       keyboard.append(InlineKeyboardButton(key, callback_data=key))
-      start_reply_markup=InlineKeyboardMarkup([ keyboard ])
 
+start_reply_markup=InlineKeyboardMarkup([ keyboard ])
+
+lang_keyboard=[]
+
+for key in config.sections():
+      lang_keyboard.append(InlineKeyboardButton(key, callback_data=key))
+
+lang_reply_markup=InlineKeyboardMarkup([ lang_keyboard ])
 
 # Dictionary for active users: Store users answers and data
 ACTIVE_USERS={}
@@ -56,36 +63,54 @@ logging.info("Bot initialized: "+str(bot.get_me()))
 def processUserResponse(update,context,user_msg):
     REPLY_MARKUP=telegram.ReplyKeyboardRemove()
     chat_id=update.effective_chat.id
+
+    # Initiate new user object
+    if chat_id not in ACTIVE_USERS:
+        ACTIVE_USERS[chat_id]=User(chat_id,update.effective_chat.first_name)
+
+    # Set user language
+    if chat_id in ACTIVE_USERS.keys() and user_msg in config.sections() and ACTIVE_USERS[chat_id].getLang() == "DEFAULT":
+        ACTIVE_USERS[chat_id].setLang(user_msg)
+        
+    # Set chat language
+    user_lang=ACTIVE_USERS[chat_id].getLang()
+
+    if user_lang == "DEFAULT" and len(config.sections()) > 1:
+            REPLY_MARKUP=lang_reply_markup
+            print(config.sections())
+            MESSAGE=config['DEFAULT']['LANG_MESSAGE']
+            REPLY_MARKUP=lang_reply_markup
     # If User questionary is already in process then process user response:
-    if chat_id in ACTIVE_USERS.keys() and ACTIVE_USERS[chat_id].isModel():
+    elif chat_id in ACTIVE_USERS.keys() and ACTIVE_USERS[chat_id].isModel():
         MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(user_msg)
         REPLY_MARKUP=ACTIVE_USERS[chat_id].getModel().getMarkup()
         # If last question in the questionary:
         if ACTIVE_USERS[chat_id].getModel().getStatus() == 0:
              saveAnswers(update,context,ACTIVE_USERS[chat_id].getModel().getAnswers())
              ACTIVE_USERS[chat_id].setModel("NA")
-             MESSAGE+=config['DEFAULT']['BYE_MESSAGE']
+             MESSAGE+=config[user_lang]['BYE_MESSAGE']
     # If User is in list, but have not started questionary:         
     # Initialize Questionary
     elif chat_id in ACTIVE_USERS.keys() and user_msg in categories:
-            ACTIVE_USERS[chat_id].setModel(Model(models[categories.index(user_msg)]))
-            MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(user_msg)
-            
+        ACTIVE_USERS[chat_id].setModel(Model(models[categories.index(user_msg)],user_lang))
+        MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(user_msg)
+
     # Init new user        
     # Show greeting message one more time    
     else:
-        ACTIVE_USERS[chat_id]=User(chat_id,update.effective_chat.first_name)
-        MESSAGE=config['DEFAULT']['GREETING_WORD']+" " \
-                +ACTIVE_USERS[chat_id].getName()+"! "+config['DEFAULT']['WELCOME_MESSAGE']
         REPLY_MARKUP=start_reply_markup
+        MESSAGE=config[user_lang]['GREETING_WORD']+" " \
+                +ACTIVE_USERS[chat_id].getName()+"! "+config[user_lang]['WELCOME_MESSAGE']
 
     context.bot.send_message(chat_id=chat_id, text=MESSAGE, parse_mode=telegram.ParseMode.HTML,reply_markup=REPLY_MARKUP)
 
 
 # Forward Answers to ADMIN_USERs:
 def saveAnswers(update,context,answers):
-    user_report=config['DEFAULT']['REPORT_HEADER']+"\n"
-    admin_report=config['DEFAULT']['ADMIN_REPORT_HEADER'] \
+    
+    user_lang=ACTIVE_USERS[update.effective_chat.id].getLang()
+    user_report=config[user_lang]['REPORT_HEADER']+"\n"
+    admin_report=config[user_lang]['ADMIN_REPORT_HEADER'] \
         +" "+str(update.effective_chat.first_name) \
         +" ("+str(update.effective_chat.id)+")\n"
     report=""
@@ -99,7 +124,7 @@ def saveAnswers(update,context,answers):
             text=user_report+report,
             parse_mode=telegram.ParseMode.HTML)
 
-    for ID in config['DEFAULT']['ADMIN_USER_IDS'].split(","):
+    for ID in config[user_lang]['ADMIN_USER_IDS'].split(","):
         context.bot.send_message(chat_id=int(ID),
                 text=admin_report+report,
                 parse_mode=telegram.ParseMode.HTML)
@@ -139,9 +164,10 @@ dispatcher.add_handler(MessageHandler(Filters.command, unknown))
 
 # Process Inline Buttons:
 def button(update, context):
+    user_lang=ACTIVE_USERS[update.effective_chat.id].getLang()
     query = update.callback_query
     query.edit_message_text(
-            text=config['DEFAULT']['SELECTED_OPTION']+" {}"
+            text=config[user_lang]['SELECTED_OPTION']+" {}"
                    .format(query.data))
     processUserResponse(update, context, query.data)
 
