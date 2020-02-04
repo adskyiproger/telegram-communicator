@@ -9,6 +9,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 class Model:
     STATE=-1
     name="Generic"
+    model_config=""
     TREE = configparser.ConfigParser()
     SECTIONS=[]
     ANSWERS=[]
@@ -94,6 +95,7 @@ class Model:
 
     def loadModel(self):
 
+        logging.debug("loadModel(): model_name: "+self.name+" user_lang: "+self.user_lang+" model_config: "+"conf/models/"+self.name+"_"+self.user_lang+"_"+"model.ini")
         if os.path.isfile("conf/models/"+self.name+"_"+self.user_lang+"_"+"model.ini"):
             self.model_config="conf/models/"+self.name+"_"+self.user_lang+"_"+"model.ini"
         elif os.path.isfile("conf/models/"+self.name+"_"+"model.ini"):
@@ -110,7 +112,7 @@ class Model:
     def __init__(self, model_name="",user_lang=""):
         logging.info("Model(): initialization: "+model_name)
         self.name=model_name
-        self.user_lang=user_lang+"_"
+        self.user_lang=user_lang
         self.loadModel()
 
        

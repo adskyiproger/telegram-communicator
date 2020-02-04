@@ -34,17 +34,6 @@ bot = telegram.Bot(token=TOKEN)
 updater = Updater(token=TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 
-# Create models to categories relation:
-categories=config['DEFAULT']['categories'].split(",")
-models=config['DEFAULT']['models'].split(",")
-MODELS=dict(zip(models,categories))
-
-# Define initial branches:
-keyboard=[]
-for key in config['DEFAULT']['CATEGORIES'].split(","):
-      keyboard.append(InlineKeyboardButton(key, callback_data=key))
-
-start_reply_markup=InlineKeyboardMarkup([ keyboard ])
 
 lang_keyboard=[]
 
@@ -58,6 +47,23 @@ ACTIVE_USERS={}
 
 
 logging.info("Bot initialized: "+str(bot.get_me()))
+
+
+def start_reply_markup(user_lang):
+    # Create models to categories relation:
+    logging.info("start_reply_markup(): Render categories for language: "+user_lang)
+    categories=config[user_lang]['categories'].split(",")
+    models=config[user_lang]['models'].split(",")
+    MODELS=dict(zip(models,categories))
+
+    # Define initial branches:
+    keyboard=[]
+    for key in config[user_lang]['CATEGORIES'].split(","):
+        keyboard.append(InlineKeyboardButton(key, callback_data=key))
+
+    return InlineKeyboardMarkup([ keyboard ])
+
+
 
 # processUserResponse(): Call upper datamodel and get answer:
 def processUserResponse(update,context,user_msg):
@@ -91,14 +97,14 @@ def processUserResponse(update,context,user_msg):
              MESSAGE+=config[user_lang]['BYE_MESSAGE']
     # If User is in list, but have not started questionary:         
     # Initialize Questionary
-    elif chat_id in ACTIVE_USERS.keys() and user_msg in categories:
-        ACTIVE_USERS[chat_id].setModel(Model(models[categories.index(user_msg)],user_lang))
+    elif chat_id in ACTIVE_USERS.keys() and user_msg in config[user_lang]['categories'].split(","):
+        ACTIVE_USERS[chat_id].setModel(Model(model_name=config[user_lang]['models'].split(",")[config[user_lang]['categories'].split(",").index(user_msg)],user_lang=user_lang))
         MESSAGE=ACTIVE_USERS[chat_id].getModel().processQuestion(user_msg)
 
     # Init new user        
     # Show greeting message one more time    
     else:
-        REPLY_MARKUP=start_reply_markup
+        REPLY_MARKUP=start_reply_markup(user_lang)
         MESSAGE=config[user_lang]['GREETING_WORD']+" " \
                 +ACTIVE_USERS[chat_id].getName()+"! "+config[user_lang]['WELCOME_MESSAGE']
 
