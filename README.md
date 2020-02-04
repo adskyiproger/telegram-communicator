@@ -1,3 +1,6 @@
+
+**do not try to use this bot. it is not ready yet**
+
 # Telegram Communicator
 Telegram bot for client dialogs support. Project is built using 
 [python-telegram-bot](https://github.com/python-telegram-bot/).
