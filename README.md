@@ -8,9 +8,11 @@ Bot behavior can be changed within `conf/settings.ini`. List of avalable configu
 
 | Variable  | Default value  | Description  |
 |---|---|---|
-| Generic properties ||
+| **Generic properties** |
 | TOKEN | N/A  | Telegram token issued by [@BotFather](https://telegram.me/botfather)  |
 | LOG_FILE  | telegram-bot.log  | Full or relative path to log file.  |
+| **Multilanguage properties** |
+
 
 ### Multilanguage support
 
