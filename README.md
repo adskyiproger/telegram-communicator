@@ -2,6 +2,18 @@
 Telegram bot for client dialogs support. Project is built using 
 [python-telegram-bot](https://github.com/python-telegram-bot/).
 
+## Configuration
+
+Bot behavior can be changed within `conf/settings.ini`. List of avalable configuration properties:
+
+| Variable  | Default value  | Description  |
+|---|---|---|
+| Generic properties ||
+| TOKEN | N/A  | Telegram token issued by [@BotFather](https://telegram.me/botfather)  |
+| LOG_FILE  | telegram-bot.log  | Full or relative path to log file.  |
+
+### Multilanguage support
+
 # Questionary
 
 ## Create new questions model file
