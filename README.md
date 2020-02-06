@@ -25,7 +25,7 @@ Bot behavior can be changed within `conf/settings.ini`. List of avalable configu
 
 Questions are stored in files with name pattern: `<name>_model.ini`
 
-`<name>`, is a questionary name.
+`<name>`, is a questionary name, it should be one word without underscores (`_`).
 
 Once new questionary file is created it should be added to `settings.ini`:
 
