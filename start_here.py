@@ -38,7 +38,7 @@ dispatcher = updater.dispatcher
 lang_keyboard=[]
 
 for key in config.sections():
-      lang_keyboard.append(InlineKeyboardButton(key, callback_data=key))
+      lang_keyboard.append(InlineKeyboardButton(config[key]['LANG_NAME']+config[key]['LANG_FLAG'], callback_data=key))
 
 lang_reply_markup=InlineKeyboardMarkup([ lang_keyboard ])
 
@@ -172,10 +172,14 @@ dispatcher.add_handler(MessageHandler(Filters.command, unknown))
 def button(update, context):
     user_lang=ACTIVE_USERS[update.effective_chat.id].getLang()
     query = update.callback_query
-    query.edit_message_text(
-            text=config[user_lang]['SELECTED_OPTION']+" {}"
-                   .format(query.data))
     processUserResponse(update, context, query.data)
+    # exception is done for language only:
+    if query.data in config.sections():
+        query.data=config[query.data]['LANG_NAME']+config[query.data]['LANG_FLAG']
+
+    query.edit_message_text(
+            text=query.message.text+" {}"
+                   .format(query.data))
 
 dispatcher.add_handler(CallbackQueryHandler(button))
 
