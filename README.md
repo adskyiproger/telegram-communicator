@@ -6,15 +6,22 @@ Telegram bot for client dialogs support. Project is built using
 [python-telegram-bot](https://github.com/python-telegram-bot/).
 
 ## Configuration
+###TODO
+1. Remove `MODELS` and `CATEGORIES` from `conf/settings.ini`
 
-Bot behavior can be changed within `conf/settings.ini`. List of avalable configuration properties:
+Bot behavior can be changed within `conf/settings.ini`. List of available configuration properties:
 
 | Variable  | Default value  | Description  |
 |---|---|---|
-| **Generic properties** |
 | TOKEN | N/A  | Telegram token issued by [@BotFather](https://telegram.me/botfather)  |
 | LOG_FILE  | telegram-bot.log  | Full or relative path to log file.  |
-| **Multilanguage properties** |
+|ADMIN_USER_IDS| ... | List of admin user `IDs`. Once client complete questionary admin User will get notification with client answers. |
+| LANG_MESSAGE | ... | Message displayed to the client before language selection. |
+| MODELS | repair,other | Comma (`,`) separated list of questionaries (file names). Actual questionaries are stored under `conf/models` directory. |
+| CATEGORIES | Repair,Other question | Comma (`,`) separated list of questionaries (display names). Actual questionaries are stored under `conf/models` directory. |
+| GREETING_WORD | Hello | A word added right before client name in `WELCOME_MESSAGE` |
+|WELCOME_MESSAGE | ... |  First message displayed to the client, after language selection |
+| BYE_MESSAGE | ... | Message displayed to the client after questionary completion. |
 
 
 ### Multilanguage support
