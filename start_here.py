@@ -38,7 +38,8 @@ dispatcher = updater.dispatcher
 lang_keyboard=[]
 
 for key in config.sections():
-      lang_keyboard.append(InlineKeyboardButton(config[key]['LANG_NAME']+config[key]['LANG_FLAG'], callback_data=key))
+      lang_keyboard.append(InlineKeyboardButton(config[key]['LANG_NAME']
+                                                +config[key]['LANG_FLAG'], callback_data=key))
 
 lang_reply_markup=InlineKeyboardMarkup([ lang_keyboard ])
 
